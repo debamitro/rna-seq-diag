@@ -76,7 +76,8 @@ def draw_transcripts(transcripts, file_name=None):
 
     _, ax = plt.subplots()
 
-    y = 130
+    ymax = len(transcripts) * 40 + 20
+    y = ymax
     patches = []
     colors = []
     xleft, xright = None, None
@@ -98,7 +99,7 @@ def draw_transcripts(transcripts, file_name=None):
     start_margin = end_margin = 100
 
     ax.set_xbound(xleft - start_margin, xright + end_margin)
-    ax.set_ybound(0, 200)
+    ax.set_ybound(0, ymax)
     ax.add_collection(p)
 
     if file_name is None:
@@ -130,7 +131,11 @@ if __name__ == "__main__":
     # Combining the two transcripts ENST00000456328.2 and ENST00000450305.2
     draw_transcripts(
         {
-            "ENST00000456328.2": [[11869, 12227], [12613, 12721], [13221, 14409]],
+            "ENST00000456328.2": [
+                [11869, 12227],
+                [12613, 12721],
+                [13221, 14409]
+            ],
             "ENST00000450305.2": [
                 [12010, 12057],
                 [12179, 12227],
