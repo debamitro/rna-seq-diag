@@ -1,6 +1,7 @@
 #!python3
 
 import re
+import sys
 
 
 def read_gtf(file_name, query_gene_name):
@@ -35,3 +36,9 @@ def read_gtf(file_name, query_gene_name):
                     else:
                         matching_transcripts[transcript_id] = [exon]
     return matching_transcripts
+
+
+if __name__ == "__main__":
+    if len(sys.argv) > 2:
+        transcripts = read_gtf(sys.argv[1], sys.argv[2])
+        print(transcripts)
