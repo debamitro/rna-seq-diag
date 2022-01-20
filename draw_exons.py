@@ -48,27 +48,10 @@ def draw_exons(exons, file_name=None, transcript_id=None):
     """Given an array of [start,end] offsets for exons,
     draws them in a diagram. Optionally writes out the diagram
     as a file, and also adds the transcript id"""
-    _, ax = plt.subplots()
-
     y = 130
-    patches = make_exon_shapes(exons, y)
-    make_exon_exon_lines(exons, ax, y)
-
-    p = PatchCollection(patches, alpha=0.3)
-
-    start_margin = end_margin = 100
-
-    ax.set_xbound(exons[0][0] - start_margin, exons[len(exons) - 1][1] + end_margin)
-    ax.set_ybound(0, 200)
-    ax.add_collection(p)
-
     if transcript_id is not None:
         plt.text(exons[0][0], y + 20, transcript_id)
-
-    if file_name is None:
-        plt.show()
-    else:
-        plt.savefig(file_name)
+    draw_exon_sequence_graph({"exons": exons, "sequences": [exons]}, y, file_name)
 
 
 def draw_transcripts(transcripts, file_name=None):
@@ -107,7 +90,7 @@ def draw_transcripts(transcripts, file_name=None):
         plt.savefig(file_name)
 
 
-def draw_exon_sequence_graph(sequence_graph):
+def draw_exon_sequence_graph(sequence_graph, y_exons=130, file_name=None):
     """Given a dictionary with two entries
      - 'exons' an array of exon start and end offsets
      - 'sequences' an array of exon sequences
@@ -116,12 +99,11 @@ def draw_exon_sequence_graph(sequence_graph):
     one universal set of exons"""
     _, ax = plt.subplots()
 
-    y_exons = 130
     exons = sequence_graph["exons"]
     patches = make_exon_shapes(exons, y_exons)
     p = PatchCollection(patches, alpha=0.3)
 
-    colors = ["xkcd:indigo", "xkcd:pale blue", "xkcd:turquoise"]
+    colors = ["xkcd:indigo", "xkcd:forest green", "xkcd:navy blue"]
     sequence_height = 5
     sequence_index = 0
     for sequence in sequence_graph["sequences"]:
@@ -130,7 +112,7 @@ def draw_exon_sequence_graph(sequence_graph):
         )
         sequence_height += 5
         sequence_index += 1
-        if sequence_index > 2:
+        if sequence_index > len(colors):
             sequence_index = 0
 
     start_margin = end_margin = 100
@@ -139,7 +121,10 @@ def draw_exon_sequence_graph(sequence_graph):
     ax.set_ybound(0, 200)
     ax.add_collection(p)
 
-    plt.show()
+    if file_name is None:
+        plt.show()
+    else:
+        plt.savefig(file_name)
 
 
 if __name__ == "__main__":
@@ -198,5 +183,6 @@ if __name__ == "__main__":
                     [13453, 13670],
                 ],
             ],
-        }
+        },
+        file_name="out4.png",
     )
