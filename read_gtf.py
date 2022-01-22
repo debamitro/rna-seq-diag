@@ -2,6 +2,7 @@
 
 import re
 import sys
+import pprint
 
 
 def read_gtf(file_name, query_gene_name):
@@ -30,7 +31,7 @@ def read_gtf(file_name, query_gene_name):
                     elif k == "transcript_id":
                         transcript_id = v
                 if gene_name == query_gene_name:
-                    exon = [int(parts[3]), int(parts[4])]
+                    exon = (int(parts[3]), int(parts[4]))
                     if transcript_id in matching_transcripts:
                         matching_transcripts[transcript_id].append(exon)
                     else:
@@ -41,4 +42,5 @@ def read_gtf(file_name, query_gene_name):
 if __name__ == "__main__":
     if len(sys.argv) > 2:
         transcripts = read_gtf(sys.argv[1], sys.argv[2])
-        print(transcripts)
+        pp = pprint.PrettyPrinter()
+        pp.pprint(transcripts)
