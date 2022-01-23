@@ -5,6 +5,7 @@ Some scripts for drawing RNA sequencing diagrams. Completely under construction.
 
 * Python 3
 * Matplotlib
+* Numpy
 
 ## How to run
 

@@ -5,6 +5,7 @@ import matplotlib.lines as lines
 from matplotlib.patches import Polygon
 from matplotlib.collections import PatchCollection
 from matplotlib import rcParams
+import numpy as np
 
 
 def make_exon_shapes(exons, y, color="xkcd:mustard"):
@@ -45,13 +46,15 @@ def make_exon_exon_lines(exons, ax, y, height=5, color="xkcd:light brown"):
 
 
 def draw_exons(exons, file_name=None, transcript_id=None):
-    """Given an array of [start,end] offsets for exons,
+    """Given an array of (start,end) offsets for exons,
     draws them in a diagram. Optionally writes out the diagram
     as a file, and also adds the transcript id"""
     y = 130
     if transcript_id is not None:
         plt.text(exons[0][0], y + 20, transcript_id)
-    draw_exon_sequence_graph({"exons": exons, "sequences": [exons]}, y, file_name)
+    draw_exon_sequence_graph(
+        {"exons": exons, "sequences": [exons]}, y, file_name, transcript_id
+    )
 
 
 def draw_transcripts(transcripts, file_name=None):
@@ -90,7 +93,7 @@ def draw_transcripts(transcripts, file_name=None):
         plt.savefig(file_name)
 
 
-def draw_exon_sequence_graph(sequence_graph, y_exons=130, file_name=None):
+def draw_exon_sequence_graph(sequence_graph, y_exons=130, file_name=None, title=None):
     """Given a dictionary with two entries
      - 'exons' an array of exon start and end offsets
      - 'sequences' an array of exon sequences
@@ -115,11 +118,18 @@ def draw_exon_sequence_graph(sequence_graph, y_exons=130, file_name=None):
         if sequence_index > len(colors):
             sequence_index = 0
 
-    start_margin = end_margin = 100
+    start_margin = end_margin = 1000
 
-    ax.set_xbound(exons[0][0] - start_margin, exons[len(exons) - 1][1] + end_margin)
+    xmin = exons[0][0] - start_margin
+    xmax = exons[len(exons) - 1][1] + end_margin
+    xtick_interval = (xmax - xmin) / 10
+    ax.set_xticks(np.arange(xmin, xmax, xtick_interval))
+    ax.set_xbound(xmin, xmax)
     ax.set_ybound(0, 200)
     ax.add_collection(p)
+
+    if title is not None:
+        ax.set_title(title)
 
     if file_name is None:
         plt.show()
@@ -132,19 +142,24 @@ if __name__ == "__main__":
     # rcParams['figure.dpi'] = 200.0
 
     # Example taken from transcript ENST00000456328.2 of the gene DDX11L1
-    draw_exons([[11869, 12227], [12613, 12721], [13221, 14409]], file_name="out1.png")
+    draw_exons(
+        [(11869, 12227), (12613, 12721), (13221, 14409)],
+        file_name="out1.png",
+        transcript_id="ENST00000456328.2",
+    )
 
     # Example taken from transcript ENST00000450305.2 of the gene DDX11L1
     draw_exons(
         [
-            [12010, 12057],
-            [12179, 12227],
-            [12613, 12619],
-            [12975, 13052],
-            [13221, 13374],
-            [13453, 13670],
+            (12010, 12057),
+            (12179, 12227),
+            (12613, 12619),
+            (12975, 13052),
+            (13221, 13374),
+            (13453, 13670),
         ],
         file_name="out2.png",
+        transcript_id="ENST00000450305.2",
     )
 
     # Combining the two transcripts ENST00000456328.2 and ENST00000450305.2
@@ -185,4 +200,5 @@ if __name__ == "__main__":
             ],
         },
         file_name="out4.png",
+        title="Contrived example using some exons from DDX11L1",
     )
