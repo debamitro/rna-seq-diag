@@ -2,7 +2,7 @@
 
 import matplotlib.pyplot as plt
 import matplotlib.lines as lines
-from matplotlib.patches import Polygon
+from matplotlib.patches import Rectangle
 from matplotlib.collections import PatchCollection
 from matplotlib import rcParams
 import numpy as np
@@ -16,16 +16,8 @@ def make_exon_shapes(exons, y, color="xkcd:mustard"):
     for exon in exons:
         start_x = exon[0]
         end_x = exon[1]
-        points = [
-            [start_x, y + 20],
-            [end_x, y + 20],
-            [end_x + 10, y + 10],
-            [end_x, y],
-            [start_x, y],
-            [start_x + 10, y + 10],
-        ]
-        poly = Polygon(points, True, color=color)
-        patches.append(poly)
+        rect = Rectangle([start_x, y], end_x - start_x, 20, color=color)
+        patches.append(rect)
 
     return patches
 
@@ -181,21 +173,21 @@ if __name__ == "__main__":
     draw_exon_sequence_graph(
         {
             "exons": [
-                [12010, 12057],
-                [12179, 12227],
-                [12613, 12619],
-                [12975, 13052],
-                [13221, 13374],
-                [13453, 13670],
+                (12010, 12057),
+                (12179, 12227),
+                (12613, 12619),
+                (12975, 13052),
+                (13221, 13374),
+                (13453, 13670),
             ],
             "sequences": [
-                [[12010, 12057], [12179, 12227], [12613, 12619], [12975, 13052]],
+                [(12010, 12057), (12179, 12227), (12613, 12619), (12975, 13052)],
                 [
-                    [12010, 12057],
-                    [12613, 12619],
-                    [12975, 13052],
-                    [13221, 13374],
-                    [13453, 13670],
+                    (12010, 12057),
+                    (12613, 12619),
+                    (12975, 13052),
+                    (13221, 13374),
+                    (13453, 13670),
                 ],
             ],
         },
