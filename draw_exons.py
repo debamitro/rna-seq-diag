@@ -7,6 +7,8 @@ from matplotlib.collections import PatchCollection
 from matplotlib import rcParams
 import numpy as np
 
+configuration = {"unscaled_exon_width": 1000, "exon_height": 20}
+
 
 def make_exon_shapes(exons, y, color="xkcd:mustard"):
     """Creates matplotlib patches representing
@@ -16,21 +18,34 @@ def make_exon_shapes(exons, y, color="xkcd:mustard"):
     for exon in exons:
         start_x = exon[0]
         end_x = exon[1]
-        rect = Rectangle([start_x, y], end_x - start_x, 20, color=color)
+        rect = Rectangle(
+            [start_x, y], end_x - start_x, configuration["exon_height"], color=color
+        )
         patches.append(rect)
 
     return patches
 
 
-def make_exon_exon_lines(exons, ax, y, height=5, color="xkcd:light brown"):
+def make_exon_exon_lines(
+    exons, ax, y, height=5, draw_at_top=True, color="xkcd:light brown"
+):
     """Creates matplotlib lines representing
     the order in which a set of exons have been seen in a transcript"""
     previous_exon = None
+    if draw_at_top:
+        y_triplet = [
+            y + configuration["exon_height"],
+            y + configuration["exon_height"] + height,
+            y + configuration["exon_height"],
+        ]
+    else:
+        y_triplet = [y, y - height, y]
+
     for exon in exons:
         if previous_exon is not None:
             line = lines.Line2D(
                 [previous_exon[1], (exon[0] + previous_exon[1]) / 2, exon[0]],
-                [y + 20, y + 20 + height, y + 20],
+                y_triplet,
                 color=color,
             )
             ax.add_line(line)
@@ -85,7 +100,9 @@ def draw_transcripts(transcripts, file_name=None):
         plt.savefig(file_name)
 
 
-def draw_exon_sequence_graph(sequence_graph, y_exons=130, file_name=None, title=None):
+def draw_exon_sequence_graph(
+    sequence_graph, y_exons=130, file_name=None, title=None, to_scale=True
+):
     """Given a dictionary with two entries
      - 'exons' an array of exon start and end offsets
      - 'sequences' an array of exon sequences
@@ -95,16 +112,42 @@ def draw_exon_sequence_graph(sequence_graph, y_exons=130, file_name=None, title=
     _, ax = plt.subplots()
 
     exons = sequence_graph["exons"]
+    if not to_scale:
+        unscaled_mapping = {}
+        cur_x = 100
+        for exon in exons:
+            unscaled_mapping[exon] = (
+                cur_x,
+                cur_x + configuration["unscaled_exon_width"],
+            )
+            cur_x += configuration["unscaled_exon_width"] * 2
+        unscaled_exons = [unscaled_mapping[x] for x in exons]
+        exons = unscaled_exons
+
     patches = make_exon_shapes(exons, y_exons)
-    p = PatchCollection(patches, alpha=0.3)
+    p = PatchCollection(patches)
 
     colors = ["xkcd:indigo", "xkcd:forest green", "xkcd:navy blue"]
     sequence_height = 5
     sequence_index = 0
+    at_top = True
     for sequence in sequence_graph["sequences"]:
+        if not to_scale:
+            unscaled_sequence = [unscaled_mapping[x] for x in sequence]
+            sequence = unscaled_sequence
+
         make_exon_exon_lines(
-            sequence, ax, y_exons, height=sequence_height, color=colors[sequence_index]
+            sequence,
+            ax,
+            y_exons,
+            height=sequence_height,
+            draw_at_top=at_top,
+            color=colors[sequence_index],
         )
+        if at_top:
+            at_top = False
+        else:
+            at_top = True
         sequence_height += 5
         sequence_index += 1
         if sequence_index > len(colors):
@@ -193,4 +236,5 @@ if __name__ == "__main__":
         },
         file_name="out4.png",
         title="Contrived example using some exons from DDX11L1",
+        to_scale=False,
     )
