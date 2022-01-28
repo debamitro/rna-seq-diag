@@ -150,7 +150,7 @@ def draw_exon_sequence_graph(
             at_top = True
         sequence_height += 5
         sequence_index += 1
-        if sequence_index > len(colors):
+        if sequence_index >= len(colors):
             sequence_index = 0
 
     start_margin = end_margin = 1000
