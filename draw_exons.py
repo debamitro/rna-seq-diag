@@ -34,16 +34,22 @@ def make_exon_shapes(exons, y, color="xkcd:mustard"):
 
 
 def make_exon_exon_lines(
-    exons, ax, y, height=5, draw_at_top=True, color="xkcd:light brown"
+    exons, ax, y, height=5, draw_at="top", color="xkcd:light brown"
 ):
     """Creates matplotlib lines representing
     the order in which a set of exons have been seen in a transcript"""
     previous_exon = None
-    if draw_at_top:
+    if draw_at == "top":
         y_triplet = [
             y + configuration["exon_height"],
             y + configuration["exon_height"] + height,
             y + configuration["exon_height"],
+        ]
+    elif draw_at == "mid":
+        y_triplet = [
+            y + configuration["exon_height"] / 2,
+            y + configuration["exon_height"] / 2,
+            y + configuration["exon_height"] / 2,
         ]
     else:
         y_triplet = [y, y - height, y]
@@ -141,7 +147,7 @@ def draw_exon_sequence_graph(
 
     sequence_height = 5
     sequence_index = 0
-    at_top = True
+    draw_position = ["mid", "top", "bottom"]
     for sequence in sequence_graph["sequences"]:
         if not to_scale:
             unscaled_sequence = [unscaled_mapping[x] for x in sequence]
@@ -152,13 +158,9 @@ def draw_exon_sequence_graph(
             ax,
             y_exons,
             height=sequence_height,
-            draw_at_top=at_top,
+            draw_at=draw_position[sequence_index],
             color=configuration["line_colors"][sequence_index],
         )
-        if at_top:
-            at_top = False
-        else:
-            at_top = True
         sequence_height += 5
         sequence_index += 1
         if sequence_index >= len(configuration["line_colors"]):
@@ -220,7 +222,7 @@ def draw_exon_sequence_forest(forest, file_name=None, title=None):
         patches.extend(make_exon_shapes(unscaled_exons, y))
         sequence_height = 5
         sequence_index = 0
-        at_top = True
+        draw_position = ["mid", "top", "bottom"]
         for sequence in tree:
             unscaled_sequence = [unscaled_mapping[x] for x in sequence]
 
@@ -229,13 +231,9 @@ def draw_exon_sequence_forest(forest, file_name=None, title=None):
                 ax,
                 y,
                 height=sequence_height,
-                draw_at_top=at_top,
+                draw_at=draw_position[sequence_index],
                 color=configuration["line_colors"][sequence_index],
             )
-            if at_top:
-                at_top = False
-            else:
-                at_top = True
             sequence_height += 5
             sequence_index += 1
             if sequence_index >= len(configuration["line_colors"]):
@@ -341,7 +339,6 @@ if __name__ == "__main__":
                 [
                     [(1010, 1015), (1025, 1030), (1045, 1050), (1060, 1065)],
                     [
-                        (1010, 1015),
                         (1025, 1030),
                         (1060, 1065),
                         (1070, 1075),
@@ -357,16 +354,12 @@ if __name__ == "__main__":
                         (1060, 1065),
                     ],
                     [
-                        (1010, 1015),
                         (1025, 1030),
                         (1060, 1065),
                         (1070, 1075),
                         (1080, 1085),
                     ],
                     [
-                        (1010, 1015),
-                        (1025, 1030),
-                        (1060, 1065),
                         (1070, 1075),
                         (1090, 1095),
                         (1100, 1105),
