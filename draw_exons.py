@@ -7,7 +7,14 @@ from matplotlib.collections import PatchCollection
 from matplotlib import rcParams
 import numpy as np
 
-configuration = {"unscaled_exon_width": 1000, "exon_height": 20}
+configuration = {
+    "unscaled_exon_width": 1000,
+    "exon_height": 20,
+    "unscaled_exon_start": 2000,
+    "left_margin": 1000,
+    "right_margin": 1000,
+    "line_colors": ["xkcd:indigo", "xkcd:forest green", "xkcd:navy blue"],
+}
 
 
 def make_exon_shapes(exons, y, color="xkcd:mustard"):
@@ -60,7 +67,7 @@ def draw_exons(exons, file_name=None, transcript_id=None):
     if transcript_id is not None:
         plt.text(exons[0][0], y + 20, transcript_id)
     draw_exon_sequence_graph(
-        {"exons": exons, "sequences": [exons]}, y, file_name, transcript_id
+        {"id": "gr1", "exons": exons, "sequences": [exons]}, y, file_name, transcript_id
     )
 
 
@@ -100,6 +107,19 @@ def draw_transcripts(transcripts, file_name=None):
         plt.savefig(file_name)
 
 
+def make_exons_unscaled(exons):
+    unscaled_mapping = {}
+    cur_x = configuration["unscaled_exon_start"]
+    for exon in exons:
+        unscaled_mapping[exon] = (
+            cur_x,
+            cur_x + configuration["unscaled_exon_width"],
+        )
+        cur_x += configuration["unscaled_exon_width"] * 2
+    unscaled_exons = [unscaled_mapping[x] for x in exons]
+    return unscaled_mapping, unscaled_exons
+
+
 def draw_exon_sequence_graph(
     sequence_graph, y_exons=130, file_name=None, title=None, to_scale=True
 ):
@@ -113,21 +133,12 @@ def draw_exon_sequence_graph(
 
     exons = sequence_graph["exons"]
     if not to_scale:
-        unscaled_mapping = {}
-        cur_x = 100
-        for exon in exons:
-            unscaled_mapping[exon] = (
-                cur_x,
-                cur_x + configuration["unscaled_exon_width"],
-            )
-            cur_x += configuration["unscaled_exon_width"] * 2
-        unscaled_exons = [unscaled_mapping[x] for x in exons]
+        unscaled_mapping, unscaled_exons = make_exons_unscaled(exons)
         exons = unscaled_exons
 
     patches = make_exon_shapes(exons, y_exons)
     p = PatchCollection(patches)
 
-    colors = ["xkcd:indigo", "xkcd:forest green", "xkcd:navy blue"]
     sequence_height = 5
     sequence_index = 0
     at_top = True
@@ -142,7 +153,7 @@ def draw_exon_sequence_graph(
             y_exons,
             height=sequence_height,
             draw_at_top=at_top,
-            color=colors[sequence_index],
+            color=configuration["line_colors"][sequence_index],
         )
         if at_top:
             at_top = False
@@ -150,17 +161,100 @@ def draw_exon_sequence_graph(
             at_top = True
         sequence_height += 5
         sequence_index += 1
-        if sequence_index >= len(colors):
+        if sequence_index >= len(configuration["line_colors"]):
             sequence_index = 0
 
-    start_margin = end_margin = 1000
+    xmin = exons[0][0] - configuration["left_margin"]
+    xmax = exons[len(exons) - 1][1] + configuration["right_margin"]
 
-    xmin = exons[0][0] - start_margin
-    xmax = exons[len(exons) - 1][1] + end_margin
-    xtick_interval = (xmax - xmin) / 10
-    ax.set_xticks(np.arange(xmin, xmax, xtick_interval))
+    if to_scale:
+        xtick_interval = (xmax - xmin) / 10
+        ax.set_xticks(np.arange(xmin, xmax, xtick_interval))
+    else:
+        ax.set_xticks([])
+
+    ax.set_yticks([y_exons])
+    if "id" in sequence_graph:
+        ax.set_yticklabels([sequence_graph["id"]])
+
     ax.set_xbound(xmin, xmax)
     ax.set_ybound(0, 200)
+    ax.add_collection(p)
+
+    if title is not None:
+        ax.set_title(title)
+
+    if file_name is None:
+        plt.show()
+    else:
+        plt.savefig(file_name)
+
+
+def draw_exon_sequence_forest(forest, file_name=None, title=None):
+    """Given a 'forest', i.e. a collection of decision trees,
+    draw them in the same plot one row at a time."""
+    _, ax = plt.subplots()
+
+    ymax = len(forest["trees"]) * 40 + 20
+    y = ymax
+    patches = []
+    xleft, xright = None, None
+    yticks = []
+    for tree in forest["trees"]:
+        yticks.append(y)
+        exons_from_tree = set()
+        for sequence in tree:
+            for exon in sequence:
+                exons_from_tree.add(exon)
+        exons = []
+        for exon in exons_from_tree:
+            exons.append(exon)
+        exons.sort()
+
+        unscaled_mapping, unscaled_exons = make_exons_unscaled(exons)
+        if xleft is None or unscaled_exons[0][0] < xleft:
+            xleft = unscaled_exons[0][0]
+        if xright is None or unscaled_exons[len(unscaled_exons) - 1][1] > xright:
+            xright = unscaled_exons[len(unscaled_exons) - 1][1]
+
+        patches.extend(make_exon_shapes(unscaled_exons, y))
+        sequence_height = 5
+        sequence_index = 0
+        at_top = True
+        for sequence in tree:
+            unscaled_sequence = [unscaled_mapping[x] for x in sequence]
+
+            make_exon_exon_lines(
+                unscaled_sequence,
+                ax,
+                y,
+                height=sequence_height,
+                draw_at_top=at_top,
+                color=configuration["line_colors"][sequence_index],
+            )
+            if at_top:
+                at_top = False
+            else:
+                at_top = True
+            sequence_height += 5
+            sequence_index += 1
+            if sequence_index >= len(configuration["line_colors"]):
+                sequence_index = 0
+        y -= sequence_height * 2 + configuration["exon_height"]
+
+    p = PatchCollection(patches)
+
+    xmin = xleft - configuration["left_margin"]
+    xmax = xright + configuration["right_margin"]
+
+    ax.set_xticks([])
+
+    ax.set_yticks(yticks)
+
+    ax.set_yticklabels(["d{0}".format(y + 1) for y in range(len(forest["trees"]))])
+
+    ax.set_xbound(xmin, xmax)
+    ax.set_ybound(0, ymax + 50)
     ax.add_collection(p)
 
     if title is not None:
@@ -215,6 +309,7 @@ if __name__ == "__main__":
     # Contrived example using some exons from the above
     draw_exon_sequence_graph(
         {
+            "id": "gr1",
             "exons": [
                 (12010, 12057),
                 (12179, 12227),
@@ -237,4 +332,47 @@ if __name__ == "__main__":
         file_name="out4.png",
         title="Contrived example using some exons from DDX11L1",
         to_scale=False,
+    )
+
+    # Completely contrived example
+    draw_exon_sequence_forest(
+        {
+            "trees": [
+                [
+                    [(1010, 1015), (1025, 1030), (1045, 1050), (1060, 1065)],
+                    [
+                        (1010, 1015),
+                        (1025, 1030),
+                        (1060, 1065),
+                        (1070, 1075),
+                        (1080, 1085),
+                    ],
+                ],
+                [
+                    [
+                        (1010, 1015),
+                        (1025, 1030),
+                        (1045, 1050),
+                        (1055, 1057),
+                        (1060, 1065),
+                    ],
+                    [
+                        (1010, 1015),
+                        (1025, 1030),
+                        (1060, 1065),
+                        (1070, 1075),
+                        (1080, 1085),
+                    ],
+                    [
+                        (1010, 1015),
+                        (1025, 1030),
+                        (1060, 1065),
+                        (1070, 1075),
+                        (1090, 1095),
+                        (1100, 1105),
+                    ],
+                ],
+            ]
+        },
+        title="Contrived decision forest",
     )
