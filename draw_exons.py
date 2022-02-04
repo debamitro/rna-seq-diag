@@ -13,11 +13,13 @@ configuration = {
     "unscaled_exon_start": 2000,
     "left_margin": 1000,
     "right_margin": 1000,
+    "exon_color": "xkcd:mustard",
+    "exon_label_color": "xkcd:white",
     "line_colors": ["xkcd:indigo", "xkcd:forest green", "xkcd:navy blue"],
 }
 
 
-def make_exon_shapes(exons, y, color="xkcd:mustard"):
+def make_exon_shapes(exons, y, color=configuration["exon_color"]):
     """Creates matplotlib patches representing
     a series of exons"""
     patches = []
@@ -202,6 +204,7 @@ def draw_exon_sequence_forest(forest, file_name=None, title=None):
     patches = []
     xleft, xright = None, None
     yticks = []
+    exon_ids = {}
     for tree in forest["trees"]:
         yticks.append(y)
         exons_from_tree = set()
@@ -220,6 +223,17 @@ def draw_exon_sequence_forest(forest, file_name=None, title=None):
             xright = unscaled_exons[len(unscaled_exons) - 1][1]
 
         patches.extend(make_exon_shapes(unscaled_exons, y))
+        for exon in exons:
+            if exon not in exon_ids:
+                exon_ids[exon] = "e{0}".format(len(exon_ids) + 1)
+            plt.text(
+                unscaled_mapping[exon][0] + 5,
+                y + 5,
+                exon_ids[exon],
+                color=configuration["exon_label_color"],
+                fontweight="bold",
+            )
+
         sequence_height = 5
         sequence_index = 0
         draw_position = ["mid", "top", "bottom"]
