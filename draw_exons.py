@@ -194,7 +194,7 @@ def draw_exon_sequence_graph(
         plt.savefig(file_name)
 
 
-def draw_exon_sequence_forest(forest, file_name=None, title=None):
+def draw_exon_sequence_forest(forest, **kwargs):
     """Given a 'forest', i.e. a collection of decision trees,
     draw them in the same plot one row at a time."""
     _, ax = plt.subplots()
@@ -204,7 +204,11 @@ def draw_exon_sequence_forest(forest, file_name=None, title=None):
     patches = []
     xleft, xright = None, None
     yticks = []
-    exon_ids = {}
+
+    if "add_exon_labels" not in kwargs:
+        kwargs["add_exon_labels"] = False
+    if kwargs["add_exon_labels"]:
+        exon_labels = {}
     for tree in forest["trees"]:
         yticks.append(y)
         exons_from_tree = set()
@@ -223,16 +227,18 @@ def draw_exon_sequence_forest(forest, file_name=None, title=None):
             xright = unscaled_exons[len(unscaled_exons) - 1][1]
 
         patches.extend(make_exon_shapes(unscaled_exons, y))
-        for exon in exons:
-            if exon not in exon_ids:
-                exon_ids[exon] = "e{0}".format(len(exon_ids) + 1)
-            plt.text(
-                unscaled_mapping[exon][0] + 5,
-                y + 5,
-                exon_ids[exon],
-                color=configuration["exon_label_color"],
-                fontweight="bold",
-            )
+
+        if kwargs["add_exon_labels"]:
+            for exon in exons:
+                if exon not in exon_labels:
+                    exon_labels[exon] = "e{0}".format(len(exon_labels) + 1)
+                plt.text(
+                    unscaled_mapping[exon][0] + 5,
+                    y + 5,
+                    exon_labels[exon],
+                    color=configuration["exon_label_color"],
+                    fontweight="bold",
+                )
 
         sequence_height = 5
         sequence_index = 0
@@ -269,13 +275,13 @@ def draw_exon_sequence_forest(forest, file_name=None, title=None):
     ax.set_ybound(0, ymax + 50)
     ax.add_collection(p)
 
-    if title is not None:
-        ax.set_title(title)
+    if "title" in kwargs:
+        ax.set_title(kwargs["title"])
 
-    if file_name is None:
-        plt.show()
+    if "file_name" in kwargs:
+        plt.savefig(kwargs["file_name"])
     else:
-        plt.savefig(file_name)
+        plt.show()
 
 
 if __name__ == "__main__":
@@ -382,4 +388,5 @@ if __name__ == "__main__":
             ]
         },
         title="Contrived decision forest",
+        add_exon_labels=True,
     )
