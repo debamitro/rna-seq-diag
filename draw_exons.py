@@ -36,11 +36,15 @@ def make_exon_shapes(exons, y, color=configuration["exon_color"]):
 
 
 def make_exon_exon_lines(
-    exons, ax, y, height=5, draw_at="top", color="xkcd:light brown"
+    exon_pairs, ax, y, height=5, draw_at="top", color="xkcd:light brown"
 ):
-    """Creates matplotlib lines representing
-    the order in which a set of exons have been seen in a transcript"""
-    previous_exon = None
+    """Creates matplotlib lines which may (or may not) represent
+    the order in which a set of exons have been seen in a transcript.
+    Mandatory arguments:
+        - exon_pairs - a list of exon pairs, which indicate the lines
+        to be drawn
+        - ax - the matplotlib Axes object
+        - y - the point on the y axis where the lines should be drawn"""
     if draw_at == "top":
         y_triplet = [
             y + configuration["exon_height"],
@@ -56,15 +60,15 @@ def make_exon_exon_lines(
     else:
         y_triplet = [y, y - height, y]
 
-    for exon in exons:
-        if previous_exon is not None:
-            line = lines.Line2D(
-                [previous_exon[1], (exon[0] + previous_exon[1]) / 2, exon[0]],
-                y_triplet,
-                color=color,
-            )
-            ax.add_line(line)
-        previous_exon = exon
+    for exon_pair in exon_pairs:
+        # Draw a line from exon_pair[0][1] to exon_pair[1][0]
+        # It can go straight, curvy on the top, or curvy on the bottom
+        line = lines.Line2D(
+            [exon_pair[0][1], (exon_pair[1][0] + exon_pair[0][1]) / 2, exon_pair[1][0]],
+            y_triplet,
+            color=color,
+        )
+        ax.add_line(line)
 
 
 def draw_exons(exons, file_name=None, transcript_id=None):
@@ -95,7 +99,8 @@ def draw_transcripts(transcripts, file_name=None):
         y -= 40
         exons = transcripts[transcript_id]
         patches.extend(make_exon_shapes(exons, y))
-        make_exon_exon_lines(exons, ax, y)
+        exon_pairs = zip(exons, exons[1:])
+        make_exon_exon_lines(exon_pairs, ax, y)
         if xleft is None or exons[0][0] < xleft:
             xleft = exons[0][0]
         if xright is None or exons[len(exons) - 1][1] > xright:
@@ -155,8 +160,9 @@ def draw_exon_sequence_graph(
             unscaled_sequence = [unscaled_mapping[x] for x in sequence]
             sequence = unscaled_sequence
 
+        exon_pairs = zip(sequence, sequence[1:])
         make_exon_exon_lines(
-            sequence,
+            exon_pairs,
             ax,
             y_exons,
             height=sequence_height,
@@ -248,11 +254,24 @@ def draw_exon_sequence_forest(forest, **kwargs):
         sequence_height = 5
         sequence_index = 0
         draw_position = ["mid", "top", "bottom"]
+
+        if kwargs["merge_common_sequences"]:
+            unique_exon_pairs = set()
         for sequence in tree:
             unscaled_sequence = [unscaled_mapping[x] for x in sequence]
 
+            if kwargs["merge_common_sequences"]:
+                exon_pairs = [
+                    p
+                    for p in zip(unscaled_sequence, unscaled_sequence[1:])
+                    if p not in unique_exon_pairs
+                ]
+                for p in exon_pairs:
+                    unique_exon_pairs.add(p)
+            else:
+                exon_pairs = zip(unscaled_sequence, unscaled_sequence[1:])
             make_exon_exon_lines(
-                unscaled_sequence,
+                exon_pairs,
                 ax,
                 y,
                 height=sequence_height,

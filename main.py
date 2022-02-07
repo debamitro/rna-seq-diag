@@ -14,4 +14,4 @@ if __name__ == "__main__":
     transcripts = read_gtf(sys.argv[1], sys.argv[2])
     draw_transcripts(transcripts)
     forest = analyze_sequences(transcripts)
-    draw_exon_sequence_forest(forest)
+    draw_exon_sequence_forest(forest, add_exon_labels=True, merge_common_sequences=True)
