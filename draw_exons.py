@@ -205,10 +205,15 @@ def draw_exon_sequence_forest(forest, **kwargs):
     xleft, xright = None, None
     yticks = []
 
+    # Set some default values
     if "add_exon_labels" not in kwargs:
         kwargs["add_exon_labels"] = False
+    if "merge_common_sequences" not in kwargs:
+        kwargs["merge_common_sequences"] = False
+
     if kwargs["add_exon_labels"]:
         exon_labels = {}
+
     for tree in forest["trees"]:
         yticks.append(y)
         exons_from_tree = set()
@@ -359,6 +364,7 @@ if __name__ == "__main__":
                 [
                     [(1010, 1015), (1025, 1030), (1045, 1050), (1060, 1065)],
                     [
+                        (1010, 1015),
                         (1025, 1030),
                         (1060, 1065),
                         (1070, 1075),
@@ -374,12 +380,16 @@ if __name__ == "__main__":
                         (1060, 1065),
                     ],
                     [
+                        (1010, 1015),
                         (1025, 1030),
                         (1060, 1065),
                         (1070, 1075),
                         (1080, 1085),
                     ],
                     [
+                        (1010, 1015),
+                        (1025, 1030),
+                        (1060, 1065),
                         (1070, 1075),
                         (1090, 1095),
                         (1100, 1105),
@@ -389,4 +399,5 @@ if __name__ == "__main__":
         },
         title="Contrived decision forest",
         add_exon_labels=True,
+        merge_common_sequences=True,
     )
