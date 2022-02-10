@@ -24,6 +24,8 @@ def analyze_sequences(transcripts):
 
     all_exons = set()
 
+    leaf_node_transcripts = {}
+
     def new_tree_node(exon):
         next_node_id = len(node_ids)
         node_ids[next_node_id] = exon
@@ -31,7 +33,7 @@ def analyze_sequences(transcripts):
 
     for transcript_id in transcripts:
         parent_node = None
-        for exon in transcripts[transcript_id]:
+        for exon in transcripts[transcript_id]["exons"]:
             if parent_node is not None:
                 if parent_node in child_nodes:
                     if exon not in child_nodes[parent_node]:
@@ -44,6 +46,7 @@ def analyze_sequences(transcripts):
                     root_exons[exon] = new_tree_node(exon)
                 parent_node = root_exons[exon]
             all_exons.add(exon)
+        leaf_node_transcripts[parent_node] = transcript_id
 
     sequence_forest = {"exons": [], "trees": []}
     for exon in all_exons:
@@ -73,18 +76,22 @@ def analyze_sequences(transcripts):
 
 if __name__ == "__main__":
     transcripts = {
-        "t1": [(20, 25), (30, 35), (50, 55), (70, 75)],
-        "t2": [
-            (20, 25),
-            (30, 35),
-            (50, 55),
-            (80, 85),
-            (90, 95),
-            (100, 105),
-            (120, 125),
-            (130, 135),
-            (150, 155),
-        ],
+        "t1": {
+            "exons": [(20, 25), (30, 35), (50, 55), (70, 75)],
+        },
+        "t2": {
+            "exons": [
+                (20, 25),
+                (30, 35),
+                (50, 55),
+                (80, 85),
+                (90, 95),
+                (100, 105),
+                (120, 125),
+                (130, 135),
+                (150, 155),
+            ],
+        },
     }
     sequences = analyze_sequences(transcripts)
     pp = pprint.PrettyPrinter()

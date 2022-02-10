@@ -97,7 +97,7 @@ def draw_transcripts(transcripts, file_name=None):
     xleft, xright = None, None
     for transcript_id in transcripts:
         y -= 40
-        exons = transcripts[transcript_id]
+        exons = transcripts[transcript_id]["exons"]
         patches.extend(make_exon_shapes(exons, y))
         exon_pairs = zip(exons, exons[1:])
         make_exon_exon_lines(exon_pairs, ax, y)
@@ -336,15 +336,19 @@ if __name__ == "__main__":
     # Combining the two transcripts ENST00000456328.2 and ENST00000450305.2
     draw_transcripts(
         {
-            "ENST00000456328.2": [[11869, 12227], [12613, 12721], [13221, 14409]],
-            "ENST00000450305.2": [
-                [12010, 12057],
-                [12179, 12227],
-                [12613, 12619],
-                [12975, 13052],
-                [13221, 13374],
-                [13453, 13670],
-            ],
+            "ENST00000456328.2": {
+                "exons": [[11869, 12227], [12613, 12721], [13221, 14409]],
+            },
+            "ENST00000450305.2": {
+                "exons": [
+                    [12010, 12057],
+                    [12179, 12227],
+                    [12613, 12619],
+                    [12975, 13052],
+                    [13221, 13374],
+                    [13453, 13670],
+                ],
+            },
         }
     )
 

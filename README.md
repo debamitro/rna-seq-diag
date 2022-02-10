@@ -58,13 +58,48 @@ A rough example of the returned 'forest' would be
 
 ### Draw_exons
 
-The 'draw_exons' module provides different functions for
+The 'draw_exons' module uses numpy and matplotlib to provide different functions around drawing exon sequences
 
 * Drawing one sequence of exons
+
+```python
+def draw_exons(exons, file_name=None, transcript_id=None):
+    """Given an array of (start,end) offsets for exons,
+    draws them in a diagram. Optionally writes out the diagram
+    as a file, and also adds the transcript id"""
+```
+
 * Drawing multiple sequences of exons
+
+```python
+def draw_transcripts(transcripts, file_name=None):
+    """Given a dictionary where the keys are transcript IDs
+    and the values are arrays of exon start and end offsets,
+    draws them in a diagram. Optionally saves out the diagram
+    in a file."""
+```
+
 * Drawing an arbitrary directed graph given a set of exons and a set of edges
 
-This module uses matplotlib and numpy
+```python
+def draw_exon_sequence_graph(
+    sequence_graph, y_exons=130, file_name=None, title=None, to_scale=True
+):
+    """Given a dictionary with two entries
+     - 'exons' an array of exon start and end offsets
+     - 'sequences' an array of exon sequences
+    draws a graph using different colors for each sequence.
+    The goal is to show different exon sequences formed from
+    one universal set of exons"""
+```
+
+* Drawing a set of directed graphs, each of which tries to show the possible sequences formed by a bunch of exons
+
+```python
+def draw_exon_sequence_forest(forest, **kwargs):
+    """Given a 'forest', i.e. a collection of decision trees,
+    draw them in the same plot one row at a time."""
+```
 
 ### main.py
 
