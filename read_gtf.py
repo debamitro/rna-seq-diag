@@ -23,7 +23,7 @@ def read_gtf(file_name, query_gene_name):
     with open(file_name) as f:
         for line in f:
             parts = re.split(r"\s", line, maxsplit=8)
-            if parts[2] == "exon":
+            if parts[2] in ["exon", "CDS", "UTR"]:
                 gene_name, transcript_id = "", ""
                 for k, v in read_gtf_keyvalues(parts[8]):
                     if k == "gene_name":
@@ -31,11 +31,26 @@ def read_gtf(file_name, query_gene_name):
                     elif k == "transcript_id":
                         transcript_id = v
                 if gene_name == query_gene_name:
-                    exon = (int(parts[3]), int(parts[4]))
-                    if transcript_id in matching_transcripts:
-                        matching_transcripts[transcript_id].append(exon)
-                    else:
-                        matching_transcripts[transcript_id] = [exon]
+                    if transcript_id not in matching_transcripts:
+                        matching_transcripts[transcript_id] = {
+                            "exons": [],
+                            "CDSs": [],
+                            "UTRs": [],
+                        }
+                    start_and_end_offset = (int(parts[3]), int(parts[4]))
+                    if parts[2] == "exon":
+                        matching_transcripts[transcript_id]["exons"].append(
+                            start_and_end_offset
+                        )
+                    elif parts[2] == "CDS":
+                        matching_transcripts[transcript_id]["CDSs"].append(
+                            start_and_end_offset
+                        )
+                    elif parts[2] == "UTR":
+                        matching_transcripts[transcript_id]["UTRs"].append(
+                            start_and_end_offset
+                        )
+
     return matching_transcripts
 
 
