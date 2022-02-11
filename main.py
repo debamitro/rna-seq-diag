@@ -3,7 +3,8 @@
 import sys
 
 from read_gtf import read_gtf
-from draw_exons import draw_transcripts, draw_exon_sequence_forest
+from diag.draw_transcripts import draw_transcripts
+from diag.draw_exon_sequence_forest import draw_exon_sequence_forest
 from analyze_sequences import analyze_sequences
 
 if __name__ == "__main__":

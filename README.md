@@ -56,13 +56,14 @@ A rough example of the returned 'forest' would be
 }
 ```
 
-### Draw_exons
+### Diag and draw_exons
 
-The 'draw_exons' module uses numpy and matplotlib to provide different functions around drawing exon sequences
+The 'diag' package uses numpy and matplotlib to provide different functions around drawing exon sequences. There is also  the 'draw_exons' module which continues to exist, for historical reasons.
 
 * Drawing one sequence of exons
 
 ```python
+# Part of draw_exons
 def draw_exons(exons, file_name=None, transcript_id=None):
     """Given an array of (start,end) offsets for exons,
     draws them in a diagram. Optionally writes out the diagram
@@ -72,6 +73,7 @@ def draw_exons(exons, file_name=None, transcript_id=None):
 * Drawing multiple sequences of exons
 
 ```python
+# Part of diag.draw_transcripts
 def draw_transcripts(transcripts, file_name=None):
     """Given a dictionary where the keys are transcript IDs
     and the values are arrays of exon start and end offsets,
@@ -82,6 +84,7 @@ def draw_transcripts(transcripts, file_name=None):
 * Drawing an arbitrary directed graph given a set of exons and a set of edges
 
 ```python
+# Part of diag.draw_exon_sequence_graph
 def draw_exon_sequence_graph(
     sequence_graph, y_exons=130, file_name=None, title=None, to_scale=True
 ):
@@ -96,6 +99,7 @@ def draw_exon_sequence_graph(
 * Drawing a set of directed graphs, each of which tries to show the possible sequences formed by a bunch of exons
 
 ```python
+# Part of diag.draw_exon_sequence_forest
 def draw_exon_sequence_forest(forest, **kwargs):
     """Given a 'forest', i.e. a collection of decision trees,
     draw them in the same plot one row at a time."""
@@ -103,4 +107,7 @@ def draw_exon_sequence_forest(forest, **kwargs):
 
 ### main.py
 
-This is where all the different parts are going to converge some day
+This is where all the different parts are going to converge some day. As of now it does two things
+
+* Draw all the transcripts for a given gene and annotation file
+* Club the transcripts into a bunch of 'decision trees' which start with the same exons, and draw them logically
