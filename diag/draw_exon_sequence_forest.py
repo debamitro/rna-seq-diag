@@ -10,7 +10,7 @@ if __name__ == "__main__":
 else:
     from diag.exons import make_exon_shapes, make_exons_unscaled, make_exon_exon_lines
     from diag.exons import configuration as exon_configuration
-    from diag.draw_exon_sequence_graph import configuration
+    from diag.draw_exon_sequence_graph import configuration as graph_configuration
 
 
 def draw_exon_sequence_forest(forest, **kwargs):
@@ -60,7 +60,7 @@ def draw_exon_sequence_forest(forest, **kwargs):
                     unscaled_mapping[exon][0] + 5,
                     y + 5,
                     exon_labels[exon],
-                    color=configuration["exon_label_color"],
+                    color=exon_configuration["exon_label_color"],
                     fontweight="bold",
                 )
 
@@ -89,18 +89,18 @@ def draw_exon_sequence_forest(forest, **kwargs):
                 y,
                 height=sequence_height,
                 draw_at=draw_position[sequence_index],
-                color=configuration["line_colors"][sequence_index],
+                color=graph_configuration["line_colors"][sequence_index],
             )
             sequence_height += 5
             sequence_index += 1
-            if sequence_index >= len(configuration["line_colors"]):
+            if sequence_index >= len(graph_configuration["line_colors"]):
                 sequence_index = 0
         y -= sequence_height * 2 + exon_configuration["exon_height"]
 
     p = PatchCollection(patches)
 
-    xmin = xleft - configuration["left_margin"]
-    xmax = xright + configuration["right_margin"]
+    xmin = xleft - graph_configuration["left_margin"]
+    xmax = xright + graph_configuration["right_margin"]
 
     ax.set_xticks([])
 

@@ -13,7 +13,6 @@ configuration = {
     "left_margin": 1000,
     "right_margin": 1000,
     "line_colors": ["xkcd:indigo", "xkcd:forest green", "xkcd:navy blue"],
-    "exon_label_color": "xkcd:white",
 }
 
 

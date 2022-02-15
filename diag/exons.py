@@ -7,6 +7,7 @@ from matplotlib.patches import Rectangle
 configuration = {
     "exon_height": 20,
     "exon_color": "xkcd:mustard",
+    "exon_label_color": "xkcd:white",
     "unscaled_exon_width": 1000,
     "unscaled_exon_start": 2000,
 }
@@ -29,7 +30,7 @@ def make_exon_shapes(exons, y, color=configuration["exon_color"]):
 
 
 def make_exon_exon_lines(
-    exon_pairs, ax, y, height=5, draw_at="top", color="xkcd:light brown"
+    exon_pairs, ax, y, height=5, draw_at="mid", color="xkcd:light brown"
 ):
     """Creates matplotlib lines which may (or may not) represent
     the order in which a set of exons have been seen in a transcript.

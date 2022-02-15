@@ -1,12 +1,15 @@
 #!python3
 
 import matplotlib.pyplot as plt
+import numpy as np
 from matplotlib.collections import PatchCollection
 
 if __name__ == "__main__":
     from exons import make_exon_shapes, make_exon_exon_lines
+    from draw_exon_sequence_graph import configuration as graph_configuration
 else:
     from diag.exons import make_exon_shapes, make_exon_exon_lines
+    from diag.draw_exon_sequence_graph import configuration as graph_configuration
 
 
 def draw_transcripts(transcripts, file_name=None):
@@ -21,8 +24,10 @@ def draw_transcripts(transcripts, file_name=None):
     y = ymax
     patches = []
     xleft, xright = None, None
+    yticks = []
     for transcript_id in transcripts:
         y -= 40
+        yticks.append(y)
         exons = transcripts[transcript_id]["exons"]
         patches.extend(make_exon_shapes(exons, y))
         exon_pairs = zip(exons, exons[1:])
@@ -32,11 +37,20 @@ def draw_transcripts(transcripts, file_name=None):
         if xright is None or exons[len(exons) - 1][1] > xright:
             xright = exons[len(exons) - 1][1]
 
-    p = PatchCollection(patches, alpha=0.3)
+    p = PatchCollection(patches)
 
-    start_margin = end_margin = 100
+    xmin = xleft - graph_configuration["left_margin"]
+    xmax = xright + graph_configuration["right_margin"]
 
-    ax.set_xbound(xleft - start_margin, xright + end_margin)
+    # Let's put 10 ticks on the x axis
+    xtick_interval = (xmax - xmin) / 10
+    xticks = np.arange(xmin, xmax, xtick_interval)
+    ax.set_xticks(xticks, ["{0}k bp".format(int(xt/1000)) for xt in xticks])
+
+    # Let's put one tick per transcript on the y axis
+    ax.set_yticks(yticks, [transcript_id for transcript_id in transcripts])
+
+    ax.set_xbound(xmin, xmax)
     ax.set_ybound(0, ymax)
     ax.add_collection(p)
 
